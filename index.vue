@@ -36,13 +36,11 @@
           :fixed="item.fixed"
           :sortable="item.sortable"
           :show-overflow-tooltip="item.isTooltip"
-          align="center"
+          :align="item.align || 'center'"
         >
           <template slot-scope="{row}">
-            <span v-if="item.prop == 'area'">{{ row.province+' '+row.city+' '+row.area}}</span>
-            <span v-else-if="item.mapping">{{ item.mapping[row.status]}}</span>
-            <span v-else-if="item.isDownload" class="is-download" @click="handleClick('download',row)"> {{row[item.prop] === null ? '--' : row[item.prop]}}</span>
-            <span v-else>{{row[item.prop] === null ? '--' : row[item.prop]}}</span>
+            <slot :name="item.slotType" :row="row" />
+            <span v-if="!item.slotType">{{row[item.prop] === null ? '--' : row[item.prop]}}</span>
           </template>
         </el-table-column>
         <el-table-column
@@ -54,29 +52,15 @@
           align="center"
         >
           <template slot-scope="{row}">
-            <template v-if="item.arr && !item.isDeviceStatus">
-              <el-button
-                size="mini"
-                v-for="(btnItem,index) in (row.status !=undefined ? row.status === 0 ? (item.arr).concat(item.lockArr) : (item.arr).concat(item.unlockArr) : item.arr)"
-                type="text"
-                :key="index"
-                v-allow="btnItem.permission"
-                @click="handleClick(btnItem.type, row)"
-              >
+            <template>
+              <el-button size="mini" v-for="(btnItem,index) in item.arr" type="text" :key="index" 
+                v-allow="btnItem.permission" 
+                @click.stop="handleClick(btnItem.type, row)" >
                 {{ btnItem.name }}
               </el-button>
-            </template>
-            <template v-if="item.isDeviceStatus">
-              <el-button
-                size="mini"
-                v-for="(btnItem,index) in (row.status !=undefined ? row.status === 7 ? (item.arr).concat(item.lockArr) : (item.arr).concat(item.unlockArr) : item.arr)"
-                type="text"
-                :key="index"
-                v-allow="btnItem.permission"
-                @click="handleClick(btnItem.type, row)"
-              >
-                {{ btnItem.name }}
-              </el-button>
+
+              <slot :name="item.slotType" :row="row" />
+
             </template>
           </template>
         </el-table-column>
@@ -169,11 +153,5 @@ export default {
   // bottom: 22px;
   // right: 20px;
 }
-.is-download {
-  color:#66b1ff;
-  cursor:pointer;
-  &:hover {
-    color:#3963d6;
-  }
-}
+
 </style>
